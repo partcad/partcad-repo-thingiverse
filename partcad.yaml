@@ -1,0 +1,73 @@
+# PartCAD package: Thingiverse things as parts, served by a repository plugin.
+#
+# Published as //pub/universe/thingiverse/models: this package is
+# //pub/universe/thingiverse, and its one external dependency 'models' is served
+# by the thingiverse_repo plugin. Nothing is listed - a model site's catalog is not
+# something to enumerate - so a part is asked for by name, and found with
+# 'pc search parts' (see the README).
+name: //pub/universe/thingiverse
+
+desc: |
+  Things on Thingiverse (https://www.thingiverse.com) as PartCAD parts, a part
+  per file of a thing, by the thing's number. Nothing is listed: a part is asked
+  for by name, and found with 'pc search parts'. No geometry is vendored; every
+  file is fetched from Thingiverse when it is first built.
+url: https://www.thingiverse.com/
+
+# The first PartCAD whose repository plugins may search their own catalog
+# ('searchKinds') and resolve a parametrized name themselves ('instanceKinds'),
+# which is what lets a parameter choose another file of a model, and that has
+# 'pc login'.
+partcad: ">=0.9.3"
+
+# An upload to a model site says nothing about whether, or how, it is made to
+# be manufactured. The plugin says the same of 'models' in its metadata.
+manufacturable: false
+
+docs:
+  name: Thingiverse for PartCAD
+  usage: |
+    ```shell
+    pc search parts -P //pub/universe/thingiverse/models -k "cable clip"
+    pc inspect //pub/universe/thingiverse/models:763622
+    pc inspect "//pub/universe/thingiverse/models:763622;format=stl"
+    ```
+
+dependencies:
+  models:
+    type: external
+    plugin: :thingiverse_repo
+    desc: Thingiverse things, a part per file.
+
+repositories:
+  thingiverse_repo:
+    type: basic
+    path: thingiverse_repo.py
+    desc: Serves Thingiverse things as parts, and searches Thingiverse.
+    parameters:
+      # Empty here, and meant to stay so. A credential is the user's own, and
+      # is set where only they see it; the plugin reads the environment first.
+      token:
+        type: string
+        default: ""
+        desc: >-
+          A Thingiverse app token (https://www.thingiverse.com/apps/create).
+          Searching, and naming a file by its id, need one. Prefer the
+          THINGIVERSE_TOKEN environment variable, or set this in your own
+          ~/.partcad/config.yaml (see the README) - never in a package.
+          'pc login //pub/universe/thingiverse:thingiverse_repo' sets it.
+      # The OAuth app PartCAD registers with Thingiverse: its client id and the
+      # callback URL registered with it. Not secrets - an implicit grant needs
+      # no client secret - and the same for every user, so they belong here.
+      # Empty until the app is registered; 'pc login' then asks for the user's
+      # own app token instead.
+      client_id:
+        type: string
+        default: ""
+        desc: The client id of PartCAD's Thingiverse OAuth app.
+      redirect_uri:
+        type: string
+        default: ""
+        desc: >-
+          The callback URL registered with PartCAD's Thingiverse OAuth app. It
+          is never loaded; the extension reads the token off the address.
