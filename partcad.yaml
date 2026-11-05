@@ -44,30 +44,96 @@ repositories:
     type: basic
     path: thingiverse_repo.py
     desc: Serves Thingiverse things as parts, and searches Thingiverse.
+    # Every parameter here is a default for every Thingiverse part, and yours
+    # to change without touching this package, two ways:
+    #
+    # - in your own ~/.partcad/config.yaml, under 'parameters', by the
+    #   plugin's name - which is also where 'pc login' keeps the token:
+    #
+    #     parameters:
+    #       //pub/universe/thingiverse:thingiverse_repo:
+    #         formats: stl,3mf
+    #
+    # - or in a package of your own, as an enrich of the plugin and a package
+    #   it serves, whose parts are then yours to name - '//thingiverse_meshes:<thing>'
+    #   in a package at the root (never with credentials: those are yours,
+    #   not a package's):
+    #
+    #     repositories:
+    #       meshes_repo:
+    #         type: enrich
+    #         source: //pub/universe/thingiverse:thingiverse_repo
+    #         with:
+    #           formats: stl,3mf
+    #     dependencies:
+    #       thingiverse_meshes:
+    #         type: external
+    #         plugin: :meshes_repo
+    #
+    # A part's own parameters override these for that part. Every part takes
+    # 'file' (one of the thing's files, by name or by its id on Thingiverse),
+    # 'format' (its best file of that format: step, brep, 3mf, stl, obj, glb or
+    # scad) and 'source' (as below) - in its name, '763622;format=stl', or in
+    # the 'with' of an enrich of the part:
+    #
+    #     parts:
+    #       clip:
+    #         type: enrich
+    #         source: //pub/universe/thingiverse/models:763622
+    #         with:
+    #           format: stl
     parameters:
-      # Empty here, and meant to stay so. A credential is the user's own, and
-      # is set where only they see it; the plugin reads the environment first.
+      formats:
+        type: string
+        default: ""
+        desc: >-
+          The formats to take a thing in, best first, separated by commas:
+          step, brep, 3mf, stl, obj, glb, scad. A format left out is not taken
+          - 'stl,3mf' is meshes only - unless a part asks for it by its own
+          'format' or 'file'. Empty is all of them, in that order.
+      source:
+        type: string
+        default: auto
+        enum: [auto, original, preview]
+        desc: >-
+          Which of a thing's files. Thingiverse has no preview meshes of its
+          own: every file is the designer's, so 'auto' and 'original' are the
+          same here, and 'preview' finds nothing.
+      # Empty here, and meant to stay so: a credential is the user's own, and
+      # is set where only they see it.
       token:
         type: string
         default: ""
         desc: >-
-          A Thingiverse app token (https://www.thingiverse.com/apps/create).
-          Searching, and naming a file by its id, need one. Prefer the
-          THINGIVERSE_TOKEN environment variable, or set this in your own
-          ~/.partcad/config.yaml (see the README) - never in a package.
-          'pc login //pub/universe/thingiverse:thingiverse_repo' sets it.
-      # The OAuth app PartCAD registers with Thingiverse: its client id and the
-      # callback URL registered with it. Not secrets - an implicit grant needs
-      # no client secret - and the same for every user, so they belong here.
-      # Empty until the app is registered; 'pc login' then asks for the user's
-      # own app token instead.
+          A Thingiverse token, which its API wants for everything, reading a
+          thing included: the App Token of an app of your own (make one at
+          https://www.thingiverse.com/apps/create), or the token an OAuth app
+          was granted (below). 'pc login
+          //pub/universe/thingiverse:thingiverse_repo' gets one in a browser
+          and keeps it in your ~/.partcad/config.yaml, under 'parameters' as
+          above; 'pc login --agent' says how to make one by hand, and takes it
+          back with '--set token=...'. The THINGIVERSE_TOKEN environment
+          variable gives it too, where the plugin's sandbox sees the
+          environment (a container does not). Never set it in a package.
+      # The OAuth app 'pc login' signs in with. Not secrets, and the same for
+      # every user, so they belong here - and yours to override with an app
+      # of your own. Empty until PartCAD's app is registered; 'pc login' asks
+      # for an App Token instead until then.
       client_id:
         type: string
         default: ""
-        desc: The client id of PartCAD's Thingiverse OAuth app.
+        desc: >-
+          The client id of the Thingiverse OAuth app 'pc login' signs in with,
+          instead of asking for an App Token: PartCAD's, once it is registered
+          with Thingiverse, and empty until then. Not a secret - an implicit
+          grant needs no client secret. An app of your own does as well:
+          register one at https://www.thingiverse.com/apps/create with a
+          callback URL, and set this and 'redirect_uri' in your
+          ~/.partcad/config.yaml as above.
       redirect_uri:
         type: string
         default: ""
         desc: >-
-          The callback URL registered with PartCAD's Thingiverse OAuth app. It
-          is never loaded; the extension reads the token off the address.
+          The callback URL registered with that OAuth app. It is never loaded:
+          the extension reads the token off the address Thingiverse sends the
+          browser to.

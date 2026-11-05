@@ -35,7 +35,9 @@ import urllib.parse
 # to what is answered - here or in remote_models.py.
 #
 # v1: things as parts, one per file, read through the REST API; and 'login'.
-CACHE_VERSION = 1
+# v2: a part's 'source' parameter, and the plugin's 'formats' and 'source' preferences;
+#     'login' says what to do with nobody at the screen.
+CACHE_VERSION = 2
 
 
 def _shared():
@@ -66,6 +68,11 @@ class Thingiverse(rm.Site):
     URL = WEB
     DESC = "Things on Thingiverse, a part per file, by the thing's number. Nothing is listed; search instead."
     VERSION = CACHE_VERSION
+    LOGIN_INSTRUCTIONS = (
+        "Thingiverse's API wants a token for everything. The simplest to make by hand is an App Token: sign in at "
+        "https://www.thingiverse.com, create an app at https://www.thingiverse.com/apps/create (any name, a desktop "
+        "app), and copy the App Token its page shows."
+    )
 
     CREDENTIALS = {"token": "THINGIVERSE_TOKEN"}
 
@@ -96,7 +103,10 @@ class Thingiverse(rm.Site):
         return me.get("name") or me.get("full_name") or "a Thingiverse user"
 
     def login_spec(self):
-        if self.client_id and self.redirect_uri:
+        # With nobody at the screen, the token has to be found by hand, and an
+        # App Token is what a person can find: an OAuth grant's lives in the
+        # address of a page that never loads.
+        if self.client_id and self.redirect_uri and not self.non_interactive:
             # OAuth, implicit: Thingiverse sends the browser to the registered
             # callback with the token in the fragment. That page never has to
             # load; the extension reads the token off the address it was sent to.

@@ -36,8 +36,9 @@ A model is named by the thing's number, as in `thingiverse.com/thing:763622`:
 | `763622;file=<id>` | one file, by its id on Thingiverse |
 | `763622;file=<name>` | one file, by its name |
 
-Both parameters may be given, and must then agree. "Best" is by format, in
-this order, and among files of one format the first the site lists:
+Both may be given, and must then agree; a third, `source`, and the plugin's
+own `formats` are under [Parameters](#parameters). "Best" is by format, in
+this order unless `formats` says otherwise, and among files of one format the first the site lists:
 
 | Format | Read as PartCAD part type | Extensions |
 | --- | --- | --- |
@@ -130,6 +131,80 @@ it, and a redirect to another host drops it.
 does not carry PartCAD's environment into its container, so an environment
 variable does not reach the plugin there. The repository parameter does, being
 part of what PartCAD hands the plugin; use that, or `pythonSandbox: venv`.
+
+## Parameters
+
+The plugin's parameters, declared in `partcad.yaml`, are a default for every
+Thingiverse part:
+
+| Parameter | Default | What it is |
+| --- | --- | --- |
+| `formats` | all, in the order above | The formats to take a thing in, best first, separated by commas. A format left out is not taken - `stl,3mf` is meshes only - unless a part asks for it by its own `format` or `file`. |
+| `source` | `auto` | Which of a thing's files: Thingiverse has no preview meshes of its own, so `auto` and `original` are the same here and `preview` finds nothing. |
+| `token` | empty | An App Token of an app of your own, or the token an OAuth app was granted. Thingiverse's API wants it for everything. `THINGIVERSE_TOKEN` gives it too. |
+| `client_id` | empty | The OAuth app `pc login` signs in with instead of asking for an App Token: PartCAD's once it is registered, empty until then. Set it, with `redirect_uri`, to an app of your own registered at https://www.thingiverse.com/apps/create to sign in through that. |
+| `redirect_uri` | empty | The callback URL registered with that app. It is never loaded. |
+
+They are yours to set without touching this package - every one of them, the
+credentials included, and the OAuth or API-key settings beside them:
+
+- in your own `~/.partcad/config.yaml`, by the plugin's name, which is where
+  `pc login` keeps the credentials:
+
+  ```yaml
+  parameters:
+    "//pub/universe/thingiverse:thingiverse_repo":
+      formats: stl,3mf
+  ```
+
+- or, for anything but the credentials, in a package of your own, as an enrich
+  of the plugin and a package it serves - `//thingiverse_meshes:<thing>` in a
+  package at the root:
+
+  ```yaml
+  repositories:
+    meshes_repo:
+      type: enrich
+      source: //pub/universe/thingiverse:thingiverse_repo
+      with:
+        formats: stl,3mf
+  dependencies:
+    thingiverse_meshes:
+      type: external
+      plugin: :meshes_repo
+  ```
+
+A part's own `file`, `format` and `source` override them for that part - in its
+name (`763622;format=stl`), or in the `with` of an enrich of the part:
+
+```yaml
+parts:
+  clip:
+    type: enrich
+    source: //pub/universe/thingiverse/models:763622
+    with:
+      format: stl
+```
+
+PartCAD keys what it caches of this package on your overrides of the plugin's
+parameters, so a change to one - logging in, too - takes effect at once. An
+environment variable is not seen there: after setting one, `pc update`
+refreshes what was cached without it.
+
+## Logging in with nobody at the screen
+
+An AI agent, or a script, logs in without a browser:
+
+```shell
+pc login --agent //pub/universe/thingiverse:thingiverse_repo
+pc login --agent --set token=... //pub/universe/thingiverse:thingiverse_repo
+```
+
+The first prints what a person would do in the browser instead of opening one -
+where to sign in, what to copy, and the command that hands it over - and exits
+with status 3. It asks for an App Token, never the OAuth grant (whose token lives in the address of a page that never loads), and says how to make one. The second hands over what the person found; the
+plugin checks it with Thingiverse before PartCAD keeps it. `pc mcp`'s `login`
+tool works the same way.
 
 ## Status
 

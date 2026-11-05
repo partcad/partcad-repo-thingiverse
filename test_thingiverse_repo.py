@@ -243,3 +243,22 @@ def test_partcad_runs_its_login_and_it_asks_for_the_browser(monkeypatch):
             run_name="login",
         )
     assert needed.value.args[0]["title"] == "Thingiverse"
+
+
+class _AgentCallback(_Callback):
+    non_interactive = True
+
+
+def test_with_nobody_at_the_screen_the_login_asks_for_an_app_token_and_says_how_to_make_one(monkeypatch):
+    """An OAuth grant's token is in the address of a page that never loads: no good to find by hand."""
+    monkeypatch.delenv("THINGIVERSE_TOKEN", raising=False)
+    parameters = {"token": "", "client_id": "abc", "redirect_uri": "http://127.0.0.1/partcad/login/thingiverse"}
+    with pytest.raises(_BrowserNeeded) as needed:
+        runpy.run_path(
+            _PLUGIN,
+            init_globals={"request": {"api": "login", "parameters": parameters}, "partcad_login": _AgentCallback()},
+            run_name="login",
+        )
+    spec = needed.value.args[0]
+    assert spec["url"] == "https://www.thingiverse.com/apps/create"
+    assert "copy the App Token" in spec["instructions"] and "THINGIVERSE_TOKEN" in spec["instructions"]
