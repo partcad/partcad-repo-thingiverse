@@ -134,9 +134,15 @@ class Thingiverse(rm.Site):
             ],
             "guide": [
                 {
+                    # Not signed in, the key page sends the browser here first.
+                    "url": "https://www.thingiverse.com/login*",
+                    "selector": "input[type=email], input[name=username], input[type=text], button",
+                    "text": "Sign in to Thingiverse; you come back to the app page after",
+                },
+                {
                     "url": "https://www.thingiverse.com/apps/create*",
                     "selector": "form input[type=text], form input:not([type=hidden])",
-                    "text": "Sign in, then create an app (any name; type 'Web App'). Copy its App Token below",
+                    "text": "Create an app (any name; type 'Web App'), then paste its App Token into the PartCAD bar",
                 },
             ],
         }
