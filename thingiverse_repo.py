@@ -136,8 +136,16 @@ class Thingiverse(rm.Site):
                 {
                     # Not signed in, the key page sends the browser here first.
                     "url": "https://www.thingiverse.com/login*",
-                    "selector": "input[type=email], input[name=username], input[type=text], button",
+                    "selector": "input[type=email], input[name=username], input[type=text]",
                     "text": "Sign in to Thingiverse; you come back to the app page after",
+                },
+                {
+                    # A sign-in button, by its text: a bare 'button' points at
+                    # whatever button comes first ("Try again", on an error page).
+                    "url": "https://www.thingiverse.com/*",
+                    "selector": "button, a",
+                    "contains": "^\\s*(log|sign) ?in\\s*$",
+                    "text": "Sign in to Thingiverse",
                 },
                 {
                     "url": "https://www.thingiverse.com/apps/create*",
