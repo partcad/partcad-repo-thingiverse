@@ -140,6 +140,12 @@ token: from where it was written, without one, `www.thingiverse.com` served its
 web app and `api.thingiverse.com` a Cloudflare bot check. A bot check is
 reported as one, with nothing tried to get past it.
 
+`pc login` was run against the live site in a real (headed) Chrome with
+PartCAD's extension: the app page sends a visitor to Thingiverse's sign-in,
+which the guide covers, but from where it was tested Thingiverse's own web app
+answered with its "Something went wrong" page, so the rest - and the OAuth
+flow, which waits for PartCAD's app to be registered - was not seen live.
+
 ## Layout
 
 | Path | Purpose |
