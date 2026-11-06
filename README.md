@@ -1,15 +1,15 @@
 # Thingiverse for PartCAD
 
 Serves Thingiverse's models as PartCAD parts, published as
-`//pub/universe/thingiverse/models`.
+`//pub/collection/thingiverse/models`.
 
 **Nothing is listed.** A model site's catalog is not something to enumerate,
 so `pc list parts` of this package is empty, as is `pc list packages`. A part is
 asked for by name, and found with `pc search parts`:
 
 ```shell
-pc search parts -P //pub/universe/thingiverse/models -k "cable clip"
-pc inspect "//pub/universe/thingiverse/models:763622"
+pc search parts -P //pub/collection/thingiverse/models -k "cable clip"
+pc inspect "//pub/collection/thingiverse/models:763622"
 ```
 
 **No geometry is vendored.** Every file is fetched from Thingiverse the first
@@ -80,7 +80,7 @@ ten minutes.
 ## Logging in
 
 ```shell
-pc login //pub/universe/thingiverse:thingiverse_repo
+pc login //pub/collection/thingiverse:thingiverse_repo
 ```
 
 checks the token the plugin has by asking Thingiverse whom it belongs to
@@ -118,11 +118,11 @@ export THINGIVERSE_TOKEN=...      # read by the plugin; see the note on Docker b
 ```yaml
 # ~/.partcad/config.yaml
 parameters:
-  "//pub/universe/thingiverse:thingiverse_repo":
+  "//pub/collection/thingiverse:thingiverse_repo":
     token: "..."
 ```
 
-`pc --extra-param "//pub/universe/thingiverse:thingiverse_repo.token=..."` does
+`pc --extra-param "//pub/collection/thingiverse:thingiverse_repo.token=..."` does
 the same for one command. The token is sent to `api.thingiverse.com` as a bearer
 token, and to nothing else: a download is taken from the file's CDN link without
 it, and a redirect to another host drops it.
@@ -153,7 +153,7 @@ credentials included, and the OAuth or API-key settings beside them:
 
   ```yaml
   parameters:
-    "//pub/universe/thingiverse:thingiverse_repo":
+    "//pub/collection/thingiverse:thingiverse_repo":
       formats: stl,3mf
   ```
 
@@ -165,7 +165,7 @@ credentials included, and the OAuth or API-key settings beside them:
   repositories:
     meshes_repo:
       type: enrich
-      source: //pub/universe/thingiverse:thingiverse_repo
+      source: //pub/collection/thingiverse:thingiverse_repo
       with:
         formats: stl,3mf
   dependencies:
@@ -181,7 +181,7 @@ name (`763622;format=stl`), or in the `with` of an enrich of the part:
 parts:
   clip:
     type: enrich
-    source: //pub/universe/thingiverse/models:763622
+    source: //pub/collection/thingiverse/models:763622
     with:
       format: stl
 ```
@@ -196,8 +196,8 @@ refreshes what was cached without it.
 An AI agent, or a script, logs in without a browser:
 
 ```shell
-pc login --agent //pub/universe/thingiverse:thingiverse_repo
-pc login --agent --set token=... //pub/universe/thingiverse:thingiverse_repo
+pc login --agent //pub/collection/thingiverse:thingiverse_repo
+pc login --agent --set token=... //pub/collection/thingiverse:thingiverse_repo
 ```
 
 The first prints what a person would do in the browser instead of opening one -
@@ -225,7 +225,7 @@ flow, which waits for PartCAD's app to be registered - was not seen live.
 
 | Path | Purpose |
 | --- | --- |
-| `partcad.yaml` | `//pub/universe/thingiverse`; the `models` external dependency and the `thingiverse_repo` repository that serves it. |
+| `partcad.yaml` | `//pub/collection/thingiverse`; the `models` external dependency and the `thingiverse_repo` repository that serves it. |
 | `thingiverse_repo.py` | The repository plugin: how Thingiverse is asked. |
 | `remote_models.py` | What every model-site plugin shares, byte for byte: the names, the formats, HTTP and its cache, the keys PartCAD asks. The same file is in partcad-repo-thingiverse, partcad-repo-makerworld, partcad-repo-grabcad, partcad-repo-printables and partcad-repo-cults3d; `remote_models.sha256` is its digest, and a test fails when the two disagree - change it in all five. |
 | `test_*.py` | The tests. Nothing in them touches the network. |

@@ -5,7 +5,7 @@
 #
 """A PartCAD 'basic' repository plugin that serves Thingiverse things as parts.
 
-Published as ``//pub/universe/thingiverse/models``. Nothing is listed: a part
+Published as ``//pub/collection/thingiverse/models``. Nothing is listed: a part
 is asked for by the thing's number, and is one file of that thing.
 
     763622                     the thing's best file (see remote_models.FORMATS)
