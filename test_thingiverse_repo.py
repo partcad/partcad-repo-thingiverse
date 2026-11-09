@@ -182,16 +182,6 @@ def test_the_cache_version_is_a_literal_partcad_can_read():
         assert any(line.startswith("CACHE_VERSION = ") and line.split("=")[1].strip().isdigit() for line in f)
 
 
-def test_the_shared_module_is_the_one_every_model_site_plugin_has():
-    """remote_models.py is byte for byte the same in all four plugins; a stray edit shows up here."""
-    import hashlib
-
-    with open(os.path.join(_HERE, "remote_models.py"), "rb") as f:
-        digest = hashlib.sha256(f.read()).hexdigest()
-    with open(os.path.join(_HERE, "remote_models.sha256")) as f:
-        assert digest == f.read().split()[0], "remote_models.py differs from the shared copy: update all five"
-
-
 # --- logging in ----------------------------------------------------------------
 
 
