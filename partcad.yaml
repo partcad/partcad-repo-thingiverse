@@ -1,11 +1,11 @@
 # PartCAD package: Thingiverse things as parts, served by a repository plugin.
 #
-# Published as //pub/universe/thingiverse/models: this package is
-# //pub/universe/thingiverse, and its one external dependency 'models' is served
+# Published as //pub/collection/thingiverse/models: this package is
+# //pub/collection/thingiverse, and its one external dependency 'models' is served
 # by the thingiverse_repo plugin. Nothing is listed - a model site's catalog is not
 # something to enumerate - so a part is asked for by name, and found with
 # 'pc search parts' (see the README).
-name: //pub/universe/thingiverse
+name: //pub/collection/thingiverse
 
 desc: |
   Things on Thingiverse (https://www.thingiverse.com) as PartCAD parts, a part
@@ -14,11 +14,10 @@ desc: |
   file is fetched from Thingiverse when it is first built.
 url: https://www.thingiverse.com/
 
-# The first PartCAD whose repository plugins may search their own catalog
-# ('searchKinds') and resolve a parametrized name themselves ('instanceKinds'),
-# which is what lets a parameter choose another file of a model, and that has
-# 'pc login'.
-partcad: ">=0.9.3"
+# The first PartCAD that has the toolkit this plugin is written with
+# (plugin_models), and hands a repository plugin the key it is asked for
+# taken apart ('query').
+partcad: ">=0.9.20"
 
 # An upload to a model site says nothing about whether, or how, it is made to
 # be manufactured. The plugin says the same of 'models' in its metadata.
@@ -28,9 +27,9 @@ docs:
   name: Thingiverse for PartCAD
   usage: |
     ```shell
-    pc search parts -P //pub/universe/thingiverse/models -k "cable clip"
-    pc inspect //pub/universe/thingiverse/models:763622
-    pc inspect "//pub/universe/thingiverse/models:763622;format=stl"
+    pc search parts -P //pub/collection/thingiverse/models -k "cable clip"
+    pc inspect //pub/collection/thingiverse/models:763622
+    pc inspect "//pub/collection/thingiverse/models:763622;format=stl"
     ```
 
 dependencies:
@@ -51,7 +50,7 @@ repositories:
     #   plugin's name - which is also where 'pc login' keeps the token:
     #
     #     parameters:
-    #       //pub/universe/thingiverse:thingiverse_repo:
+    #       //pub/collection/thingiverse:thingiverse_repo:
     #         formats: stl,3mf
     #
     # - or in a package of your own, as an enrich of the plugin and a package
@@ -62,7 +61,7 @@ repositories:
     #     repositories:
     #       meshes_repo:
     #         type: enrich
-    #         source: //pub/universe/thingiverse:thingiverse_repo
+    #         source: //pub/collection/thingiverse:thingiverse_repo
     #         with:
     #           formats: stl,3mf
     #     dependencies:
@@ -72,14 +71,14 @@ repositories:
     #
     # A part's own parameters override these for that part. Every part takes
     # 'file' (one of the thing's files, by name or by its id on Thingiverse),
-    # 'format' (its best file of that format: step, brep, 3mf, stl, obj, glb or
-    # scad) and 'source' (as below) - in its name, '763622;format=stl', or in
+    # 'format' (its best file of that format: one of the 'formats' below)
+    # and 'source' (as below) - in its name, '763622;format=stl', or in
     # the 'with' of an enrich of the part:
     #
     #     parts:
     #       clip:
     #         type: enrich
-    #         source: //pub/universe/thingiverse/models:763622
+    #         source: //pub/collection/thingiverse/models:763622
     #         with:
     #           format: stl
     parameters:
@@ -88,7 +87,9 @@ repositories:
         default: ""
         desc: >-
           The formats to take a thing in, best first, separated by commas:
-          step, brep, 3mf, stl, obj, glb, scad. A format left out is not taken
+          step, brep, iges, 3mf, stl, obj, glb, usd, sldprt, ipt,
+          catpart, f3d, fcstd, sat, pvz, scad. A format left out is
+          not taken
           - 'stl,3mf' is meshes only - unless a part asks for it by its own
           'format' or 'file'. Empty is all of them, in that order.
       source:
@@ -109,27 +110,26 @@ repositories:
           thing included: the App Token of an app of your own (make one at
           https://www.thingiverse.com/apps/create), or the token an OAuth app
           was granted (below). 'pc login
-          //pub/universe/thingiverse:thingiverse_repo' gets one in a browser
+          //pub/collection/thingiverse:thingiverse_repo' gets one in a browser
           and keeps it in your ~/.partcad/config.yaml, under 'parameters' as
           above; 'pc login --agent' says how to make one by hand, and takes it
           back with '--set token=...'. The THINGIVERSE_TOKEN environment
           variable gives it too, where the plugin's sandbox sees the
           environment (a container does not). Never set it in a package.
-      # The OAuth app 'pc login' signs in with. Not secrets, and the same for
-      # every user, so they belong here - and yours to override with an app
-      # of your own. Empty until PartCAD's app is registered; 'pc login' asks
-      # for an App Token instead until then.
+      # An OAuth app of your own, for 'pc login' to sign in with. Empty here,
+      # and meant to stay so: PartCAD registers no app with Thingiverse, so
+      # the app - like the token - is yours, and is set where only you see it.
+      # Without one, 'pc login' asks for an App Token instead.
       client_id:
         type: string
         default: ""
         desc: >-
-          The client id of the Thingiverse OAuth app 'pc login' signs in with,
-          instead of asking for an App Token: PartCAD's, once it is registered
-          with Thingiverse, and empty until then. Not a secret - an implicit
-          grant needs no client secret. An app of your own does as well:
-          register one at https://www.thingiverse.com/apps/create with a
-          callback URL, and set this and 'redirect_uri' in your
-          ~/.partcad/config.yaml as above.
+          The client id of a Thingiverse OAuth app of your own, for 'pc login'
+          to sign in with instead of asking for an App Token: register one at
+          https://www.thingiverse.com/apps/create with a callback URL, and set
+          this and 'redirect_uri' in your ~/.partcad/config.yaml as above. Not
+          a secret - an implicit grant needs no client secret. PartCAD
+          registers no app of its own.
       redirect_uri:
         type: string
         default: ""

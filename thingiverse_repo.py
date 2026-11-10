@@ -5,10 +5,10 @@
 #
 """A PartCAD 'basic' repository plugin that serves Thingiverse things as parts.
 
-Published as ``//pub/universe/thingiverse/models``. Nothing is listed: a part
+Published as ``//pub/collection/thingiverse/models``. Nothing is listed: a part
 is asked for by the thing's number, and is one file of that thing.
 
-    763622                     the thing's best file (see remote_models.FORMATS)
+    763622                     the thing's best file (see plugin_models.FORMATS)
     763622;format=stl          its best STL
     763622;file=1234567        one file, by its id
     763622;file=clip.stl       or by its name
@@ -22,37 +22,27 @@ the token the app carries is the app's, not the user's.
 
 PartCAD runs this script once per key (via runpy) with the key in
 ``request["key"]``; the answer goes in ``output``. What the keys mean, and
-everything else that is the same for every model site, is in remote_models.py.
+everything else that is the same for every model site, is PartCAD's plugin_models.
 """
 
-import importlib.util
-import os
-import sys
 import urllib.parse
+
+# PartCAD's toolkit for model-site plugins: one of its wrappers, on the path of
+# every sandbox a plugin runs in, from PartCAD 0.9.20 on.
+import plugin_models as rm
 
 # When this plugin's answers stopped meaning what they meant before. PartCAD
 # keys everything it caches of this package on it, so raise it with any change
-# to what is answered - here or in remote_models.py.
+# to what is answered - here or in PartCAD's plugin_models.
 #
 # v1: things as parts, one per file, read through the REST API; and 'login'.
 # v2: a part's 'source' parameter, and the plugin's 'formats' and 'source' preferences;
 #     'login' says what to do with nobody at the screen.
-CACHE_VERSION = 2
+# v3: the toolkit is PartCAD's own (plugin_models): IGES, OpenUSD and the native
+#     formats of CAD applications are taken too, and a model's id is spelled in
+#     a file's path the way it is read back.
+CACHE_VERSION = 3
 
-
-def _shared():
-    """remote_models.py, beside this script, under a name of this plugin's own."""
-    name = "_partcad_thingiverse_remote_models"
-    if name not in sys.modules:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "remote_models.py")
-        spec = importlib.util.spec_from_file_location(name, path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        spec.loader.exec_module(module)
-    return sys.modules[name]
-
-
-rm = _shared()
 
 API = "https://api.thingiverse.com"
 WEB = "https://www.thingiverse.com"
@@ -79,10 +69,11 @@ class Thingiverse(rm.Site):
     def __init__(self, request=None):
         super().__init__(request)
         self.token = rm.credential(self.request, "token", "THINGIVERSE_TOKEN")
-        # The OAuth app PartCAD registers with Thingiverse, when it has: its
-        # client id and the callback it registered. Not credentials - every
-        # user of the package shares them - so they are the package's
-        # parameters, set in its partcad.yaml.
+        # The user's own OAuth app, when they have registered one: its client
+        # id and the callback it registered. Not secrets - an implicit grant
+        # has no client secret - but the user's, like the token: PartCAD
+        # registers no app with Thingiverse, so they are set in the user's own
+        # configuration, never in a package.
         parameters = self.request.get("parameters") or {}
         self.client_id = str(parameters.get("client_id") or "").strip()
         self.redirect_uri = str(parameters.get("redirect_uri") or "").strip()
@@ -130,8 +121,8 @@ class Thingiverse(rm.Site):
                     },
                 ],
             }
-        # No app registered: the user's own. Thingiverse shows an app's token
-        # on the app's page once it is made; it is pasted into the banner.
+        # No OAuth app: the user's own App Token. Thingiverse shows an app's
+        # token on the app's page once it is made; it is pasted into the banner.
         return {
             "url": "https://www.thingiverse.com/apps/create",
             "title": "Thingiverse",
