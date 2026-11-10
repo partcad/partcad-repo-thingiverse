@@ -142,6 +142,12 @@ parameters:
     token: "..."
 ```
 
+`token`, `client_id`, `redirect_uri` are the package's, not only the plugin's: each says `shared: true`. With
+PartCAD 0.10.4 or later, `pc login` keeps them under the package,
+`"//pub/collection/thingiverse":`, where an entry gives them to every object of the
+package; an entry for the plugin, as above, still works, and wins over the
+package's. An older PartCAD reads the plugin's entry only.
+
 `pc --extra-param "//pub/collection/thingiverse:thingiverse_repo.token=..."` does
 the same for one command. The token is sent to `api.thingiverse.com` as a bearer
 token, and to nothing else: a download is taken from the file's CDN link without

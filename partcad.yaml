@@ -116,6 +116,7 @@ repositories:
           back with '--set token=...'. The THINGIVERSE_TOKEN environment
           variable gives it too, where the plugin's sandbox sees the
           environment (a container does not). Never set it in a package.
+        shared: true
       # An OAuth app of your own, for 'pc login' to sign in with. Empty here,
       # and meant to stay so: PartCAD registers no app with Thingiverse, so
       # the app - like the token - is yours, and is set where only you see it.
@@ -130,6 +131,7 @@ repositories:
           this and 'redirect_uri' in your ~/.partcad/config.yaml as above. Not
           a secret - an implicit grant needs no client secret. PartCAD
           registers no app of its own.
+        shared: true
       redirect_uri:
         type: string
         default: ""
@@ -137,3 +139,4 @@ repositories:
           The callback URL registered with that OAuth app. It is never loaded:
           the extension reads the token off the address Thingiverse sends the
           browser to.
+        shared: true
